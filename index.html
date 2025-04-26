@@ -1,31 +1,122 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="stylesheet" href="index.css">
-    <link rel="icon" href="pho.png" type="image/png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Visual Flow</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%97%86%3C/text%3E%3C/svg%3E" type="image/svg+xml">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="index.css">
+    <style>
+        /* Add minor style overrides or styles not easily done with Tailwind */
+        body {
+            /* Ensure grid layout takes precedence on larger screens */
+            grid-template-rows: 100vh; /* Default for mobile */
+        }
+        @media (min-width: 768px) { /* md breakpoint */
+             body {
+                /* Explicitly set columns for desktop */
+                grid-template-columns: 1fr 300px;
+             }
+        }
+    </style>
 </head>
-<body>
-    <div id="main">
-        <canvas id="code_space"></canvas>
-    </div>
-    <div id="palate">
-        <div id="flow_blocks">
-            <div id="start"></div>
-            <div id="end"></div>
-        </div>
-        <div id="logic_blocks">
-            <div id="if_block"></div>
-            <div id="else_block"></div>
-            <div id="less_than_block"></div>
-            <div id="greater_than_block"></div>
-            <div id="less_than_equal_to_block"></div>
+<body class="bg-gray-100 h-screen grid grid-cols-1 md:grid-cols-[1fr_300px] grid-rows-[100vh] overflow-hidden font-sans">
+
+    <div id="main" class="relative bg-white border-b-2 md:border-b-0 md:border-r-2 border-gray-300 overflow-hidden">
+        <canvas id="code_space" class="w-full h-full block cursor-grab"></canvas>
         </div>
 
-        
-    </div>
+    <div id="palate" class="bg-gray-800 p-4 overflow-y-auto shadow-inner">
+        <div class="palette-category mb-5">
+            <h3 class="category-header">Events</h3>
+            <div class="palette-item bg-yellow-500" data-block-type="cap" data-color="#f59e0b">
+                <span>When program starts</span>
+            </div>
+            <div class="palette-item bg-yellow-500" data-block-type="cap" data-color="#f59e0b">
+                <span>When key pressed</span>
+            </div>
+        </div>
+
+        <div class="palette-category mb-5">
+            <h3 class="category-header">Control</h3>
+            <div class="palette-item bg-orange-500" data-block-type="c-block" data-color="#f97316">
+                <span>if <span class="value-input">condition</span></span>
+            </div>
+             <div class="palette-item bg-orange-500" data-block-type="stack" data-color="#f97316">
+                 <span>else</span>
+             </div>
+            <div class="palette-item bg-orange-500" data-block-type="c-block" data-color="#f97316">
+                <span>repeat <span class="value-input">10</span> times</span>
+            </div>
+            <div class="palette-item bg-orange-500" data-block-type="c-block" data-color="#f97316">
+                <span>while <span class="value-input">condition</span></span>
+            </div>
+             <div class="palette-item bg-orange-500" data-block-type="end-cap" data-color="#f97316">
+                 <span>stop script</span>
+             </div>
+        </div>
+
+        <div class="palette-category mb-5">
+            <h3 class="category-header">Operators</h3>
+             <div class="palette-item operator-block bg-green-600" data-block-type="reporter" data-color="#16a34a">
+                <span><span class="value-input">a</span> &lt; <span class="value-input">b</span></span>
+            </div>
+            <div class="palette-item operator-block bg-green-600" data-block-type="reporter" data-color="#16a34a">
+                <span><span class="value-input">a</span> &gt; <span class="value-input">b</span></span>
+            </div>
+            <div class="palette-item operator-block bg-green-600" data-block-type="reporter" data-color="#16a34a">
+                <span><span class="value-input">a</span> = <span class="value-input">b</span></span>
+            </div>
+            <div class="palette-item operator-block bg-green-600" data-block-type="reporter" data-color="#16a34a">
+                <span><span class="value-input">a</span> + <span class="value-input">b</span></span>
+            </div>
+             <div class="palette-item operator-block bg-green-600" data-block-type="reporter" data-color="#16a34a">
+                <span>random <span class="value-input">1</span> to <span class="value-input">10</span></span>
+            </div>
+        </div>
+
+        <div class="palette-category mb-5">
+            <h3 class="category-header">Motion</h3>
+            <div class="palette-item bg-blue-500" data-block-type="stack" data-color="#3b82f6">
+                <span>move <span class="value-input">10</span> steps</span>
+            </div>
+            <div class="palette-item bg-blue-500" data-block-type="stack" data-color="#3b82f6">
+                <span>turn right <span class="value-input">15</span> deg</span>
+            </div>
+            <div class="palette-item bg-blue-500" data-block-type="stack" data-color="#3b82f6">
+                <span>go to x:<span class="value-input">0</span> y:<span class="value-input">0</span></span>
+            </div>
+        </div>
+
+        <div class="palette-category mb-5">
+            <h3 class="category-header">Variables</h3>
+            <div class="palette-item bg-red-600" data-block-type="stack" data-color="#dc2626">
+                <span>set <span class="value-input">var</span> to <span class="value-input">0</span></span>
+            </div>
+            <div class="palette-item bg-red-600" data-block-type="stack" data-color="#dc2626">
+                <span>change <span class="value-input">var</span> by <span class="value-input">1</span></span>
+            </div>
+            <div class="palette-item variable-block bg-red-600" data-block-type="reporter" data-color="#dc2626">
+                <span>variable</span>
+            </div>
+        </div>
+
+        <div class="palette-category mb-5">
+            <h3 class="category-header">Looks</h3>
+             <div class="palette-item bg-purple-600" data-block-type="stack" data-color="#9333ea">
+                <span>say <span class="value-input">Hello!</span></span>
+            </div>
+             <div class="palette-item bg-purple-600" data-block-type="stack" data-color="#9333ea">
+                <span>show</span>
+            </div>
+             <div class="palette-item bg-purple-600" data-block-type="stack" data-color="#9333ea">
+                <span>hide</span>
+            </div>
+        </div>
+
+        </div>
+
     <script src="app.js"></script>
 </body>
 </html>
