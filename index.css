@@ -1,0 +1,165 @@
+/* Basic page setup */
+body {
+    background-color: #f5f5f5;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+}
+
+/* Top Navbar */
+#topnavbar {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background-color: #ffffff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    display: flex;
+    padding: 10px 20px;
+    z-index: 10;
+}
+
+/* Dropdown Buttons in Navbar */
+.dropbtn {
+    background-color: transparent;
+    color: #333;
+    padding: 10px 16px;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+    margin-right: 20px;
+}
+
+/* Dropdown Content */
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #ffffff;
+    min-width: 160px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+    overflow: hidden;
+    margin-top: 5px;
+    z-index: 20;
+}
+
+.dropdown-content a {
+    color: #333;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    transition: background 0.3s;
+}
+
+.dropdown-content a:hover {
+    background-color: #f0f0f0;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.dropdown:hover .dropbtn {
+    color: #007bff;
+}
+
+/* Main layout below navbar */
+#main {
+    margin-top: 70px;
+    display: flex;
+    height: calc(100vh - 70px);
+}
+
+/* Left menu (round buttons) */
+#left-menu {
+    background-color: #ffffff;
+    width: 100px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+}
+
+/* Round menu buttons */
+.menu-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    margin: 10px 0;
+    font-size: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s;
+}
+
+.menu-button:hover {
+    background-color: #0056b3;
+    transform: scale(1.1);
+}
+
+/* Palette area */
+#palette {
+    background-color: #f9f9f9;
+    width: 200px;
+    padding: 20px;
+    overflow-y: auto;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+}
+
+/* Block groups inside palette */
+.block-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Single block */
+.block {
+    background: #ffffff;
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+    cursor: grab;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: background 0.3s, transform 0.2s;
+}
+
+.block:hover {
+    background-color: #e0f0ff;
+    transform: scale(1.05);
+}
+
+/* Canvas container */
+#canvas-container {
+    flex-grow: 1;
+    background-color: #fff3e0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+/* Actual canvas */
+#code_space {
+    height: 500px;
+    width: 800px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Right side box (empty for now) */
+#right-box {
+    background-color: #ffffff;
+    width: 200px;
+    box-shadow: -2px 0 5px rgba(0,0,0,0.05);
+}

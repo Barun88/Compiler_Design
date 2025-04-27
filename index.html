@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="index.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Programming</title>
+</head>
+<body>
+    <div id="topnavbar">
+        <div class="dropdown">
+            <button class="dropbtn">Save</button>
+            <div class="dropdown-content">
+                <a href="#">Save to PC</a>
+                <a href="#">Save to Server</a>
+            </div>
+        </div>
+        <div class="dropdown">
+            <button class="dropbtn">Edit</button>
+            <div class="dropdown-content">
+                <a href="#">Undo</a>
+                <a href="#">Redo</a>
+                <a href="#">Cut</a>
+                <a href="#">Copy</a>
+                <a href="#">Paste</a>
+            </div>
+        </div>
+    </div>
+    
+    <div id="main">
+        <div id="left-menu">
+            <button class="menu-button" onclick="showBlocks('flow')">Flow Blocks</button>
+            <button class="menu-button" onclick="showBlocks('logic')">Logic Blocks</button>
+        </div>
+    
+        <div id="palette">
+            <div id="flow-blocks" class="block-group">
+                <div class="block">Start</div>
+                <div class="block">End</div>
+            </div>
+            <div id="logic-blocks" class="block-group" style="display:none;">
+                <div class="block">If</div>
+                <div class="block">Else</div>
+                <div class="block">Less Than</div>
+                <div class="block">Greater Than</div>
+            </div>
+        </div>
+    
+        <div id="canvas-container">
+            <canvas id="code_space"></canvas>
+        </div>
+    
+        <div id="right-box">
+            <!-- Reserved for future content -->
+        </div>
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>
