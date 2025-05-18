@@ -1,0 +1,38 @@
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+#toolbar {
+  background: #f0f0f0;
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+}
+#main {
+  display: flex;
+  height: calc(100% - 51px);
+}
+#blocklyDiv {
+  height: 100%;
+  width: 70%;
+}
+#codePanel {
+  width: 30%;
+  padding: 10px;
+  background-color: #f8f8f8;
+  border-left: 1px solid #ccc;
+  overflow: auto;
+}
+#generatedCode {
+  white-space: pre;
+  background: #fff;
+  padding: 10px;
+  border: 1px solid #ddd;
+  font-family: monospace;
+  font-size: 12px;
+}
+button {
+  padding: 8px 16px;
+  margin-right: 10px;
+  cursor: pointer;
+}
