@@ -1,3 +1,4 @@
+//injection [properties and behaviour of the codespace]
 const workspace = Blockly.inject('blocklyDiv', {
   toolbox: document.getElementById('toolbox'),
   grid: {
@@ -9,7 +10,7 @@ const workspace = Blockly.inject('blocklyDiv', {
   trashcan: true,
   zoom: {
     controls: true,
-    wheel: false,
+    wheel: true,
     startScale: 1.0,
     maxScale: 2,
     minScale: 0.5
@@ -29,11 +30,20 @@ function clearWorkspace() {
   document.getElementById('generatedCode').innerText = '// Workspace cleared';
 }
 
-// Auto-generate code when blocks change
-workspace.addChangeListener(generateCode);
+//esprisma parsing function
+ function getAst() {
+    try {
+      const ast = acorn.parse(generatedcode, {ecmaVersion: "latest",locations:false});
+      //console.log("AST:", ast);
+      document.getElementById('generatedCode').innerText = JSON.stringify(ast, null, 2);
+    } catch (error) {
+      console.error("Failed to parse:", error);
+      document.getElementById('generatedCode').innerText = '// Failed to generate AST';
+    }
+  }
 
-// Initial generation
-generateCode();
+  //for future reference -> i need to filter the ast generation for llvm ir things to remove:[startIndicator,endIndicator] also convert the windows.alert function to a simple console log function, then filter and simpilfy it further to a print statement :D
+
 
 function logCode(){
     console.log("Current Generated Js Code:\n",generatedcode);
