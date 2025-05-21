@@ -30,7 +30,7 @@ function clearWorkspace() {
   document.getElementById('generatedCode').innerText = '// Workspace cleared';
 }
 
-//esprisma parsing function
+//acron parsing function
  function getAst() {
     try {
       const ast = acorn.parse(generatedcode, {ecmaVersion: "latest",locations:false});
