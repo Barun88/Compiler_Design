@@ -11,18 +11,18 @@
 <body>
   <div id="toolbar">
     <button onclick="generateCode()">Generate Code</button>
+    <button onclick="getAst()">Generate Ast</button>
+    <button onclick="generateLLVMIR()">Generate LLVM IR</button>
+    <button id="sendAstButton" onclick="sendLLVMIRToServer()">Run</button>
     <button onclick="clearWorkspace()">Clear</button>
     <button onclick="logCode()">Log Code</button>
-    <button onclick="getAst()">Generate Ast</button>
-    <button id="sendAstButton" onclick="sendAstToServer()">Run</button>
-    <button onclick="generateLLVMIR()">Generate LLVM IR</button>
-    <button onclick="sendLLVMIRToServer()">Send LLVM IR to Server</button>
   </div>
   <div id="main">
     <div id="blocklyDiv"></div>
     <div id="codePanel">
       <h3>Generated JavaScript</h3>
       <div id="generatedCode">// Click 'Generate Code'</div>
+      <pre id="outputDisplay">Output here</pre>
     </div>
   </div>
 

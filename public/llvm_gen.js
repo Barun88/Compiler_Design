@@ -1,13 +1,14 @@
+
 // LLVM IR Generator from JavaScript AST
 class LLVMIRGenerator {
   constructor() {
     this.output = [];
     this.labelCounter = 0;
     this.variableCounter = 0;
-    this.variables = new Map(); // variable name -> { type, llvmName }
+    this.variables = new Map();
     this.functions = new Map();
     this.currentFunction = null;
-    this.stringConstants = new Map(); // string -> global variable name
+    this.stringConstants = new Map();
     this.stringCounter = 0;
   }
 
@@ -71,16 +72,32 @@ class LLVMIRGenerator {
 
   // Add string constants
   addStringConstants() {
-    if (this.stringConstants.size > 0) {
-      this.emit('\n; String constants');
-      for (const [str, globalName] of this.stringConstants) {
-        const escaped = str.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n');
-        const length = escaped.length + 1; // +1 for null terminator
-        this.emit(`${globalName} = private unnamed_addr constant [${length} x i8] c"${escaped}\\00", align 1`);
-      }
+  if (this.stringConstants.size > 0) {
+    this.emit('\n; String constants');
+    for (const [str, globalName] of this.stringConstants) {
+      const length = this.getUTF8Length(str) + 1; // +1 for null terminator
+      const escaped = str
+        .replace(/\\/g, '\\5C')
+        .replace(/"/g, '\\"')
+        .replace(/\n/g, '\\0A')
+        .replace(/\r/g, '\\0D')
+        .replace(/\t/g, '\\09') + '\\00';
+      this.emit(`${globalName} = private unnamed_addr constant [${length} x i8] c"${escaped}", align 1`);
     }
   }
+}
 
+getUTF8Length(str) {
+  let len = 0;
+  for (let i = 0; i < str.length; i++) {
+    const code = str.charCodeAt(i);
+    if (code < 0x80) len += 1;
+    else if (code < 0x800) len += 2;
+    else if (code < 0x10000) len += 3;
+    else len += 4;
+  }
+  return len;
+}
   // Visit program node
   visitProgram(node) {
     this.emit('');
@@ -157,25 +174,36 @@ class LLVMIRGenerator {
   }
 
   // Visit print statement (custom)
-  visitPrintStatement(node) {
-    const argVar = this.visitExpression(node.argument);
-    
-    // Check if it's a string or number
-    if (node.argument.type === 'Literal' && typeof node.argument.value === 'string') {
-      // Print string
-      const strGlobal = this.newStringConstant(node.argument.value);
-      const strPtr = this.newVariable();
-      this.emit(`  ${strPtr} = getelementptr inbounds [${node.argument.value.length + 1} x i8], [${node.argument.value.length + 1} x i8]* ${strGlobal}, i64 0, i64 0`);
-      this.emit(`  call i32 @puts(i8* ${strPtr})`);
-    } else {
-      // Print number
-      const formatStr = this.newStringConstant('%d\\n');
-      const formatPtr = this.newVariable();
-      this.emit(`  ${formatPtr} = getelementptr inbounds [4 x i8], [4 x i8]* ${formatStr}, i64 0, i64 0`);
-      this.emit(`  call i32 (i8*, ...) @printf(i8* ${formatPtr}, i32 ${argVar})`);
-    }
+  // Helper method to determine if an expression evaluates to a string
+isStringExpression(node) {
+  if (node.type === 'Literal' && typeof node.value === 'string') {
+    return true;
   }
+  // Add more string detection logic here if needed
+  return false;
+}
 
+// Visit print statement (custom) - FIXED VERSION
+visitPrintStatement(node) {
+  // First evaluate the expression to get the result
+  const argVar = this.visitExpression(node.argument);
+  
+  // Check if the original argument is a string literal
+  if (this.isStringExpression(node.argument)) {
+    // Print string using puts
+    const strValue = node.argument.value;
+    const strGlobal = this.newStringConstant(strValue);
+    const strPtr = this.newVariable();
+    this.emit(`  ${strPtr} = getelementptr inbounds [${strValue.length + 1} x i8], [${strValue.length + 1} x i8]* ${strGlobal}, i64 0, i64 0`);
+    this.emit(`  call i32 @puts(i8* ${strPtr})`);
+  } else {
+    // Print number using printf
+    const formatStr = this.newStringConstant('%d\\n');
+    const formatPtr = this.newVariable();
+    this.emit(`  ${formatPtr} = getelementptr inbounds [4 x i8], [4 x i8]* ${formatStr}, i64 0, i64 0`);
+    this.emit(`  call i32 (i8*, ...) @printf(i8* ${formatPtr}, i32 ${argVar})`);
+  }
+}
   // Visit if statement
   visitIfStatement(node) {
     const testVar = this.visitExpression(node.test);
@@ -434,7 +462,13 @@ async function sendLLVMIRToServer() {
   const llvmIR = generateLLVMIR();
   
   if (!llvmIR) {
+    alert('LLVM IR is empty or invalid.');
     return;
+  }
+
+  const outputDisplay = document.getElementById('outputDisplay');
+  if (outputDisplay) {
+    outputDisplay.textContent = 'Compiling and running...';
   }
 
   try {
@@ -445,21 +479,32 @@ async function sendLLVMIRToServer() {
       },
       body: JSON.stringify({
         llvmIR: llvmIR,
-        ast: ast,
+        ast: ast, // Make sure `ast` is defined in this scope
         timestamp: new Date().toISOString()
       })
     });
     
-    if (response.ok) {
-      const result = await response.json();
-      console.log('LLVM IR sent successfully:', result);
-      alert('LLVM IR sent to server successfully!');
+    const result = await response.json();
+
+    if (response.ok && result.success) {
+      console.log('LLVM IR executed successfully:', result.output);
+
+      if (outputDisplay) {
+        outputDisplay.textContent = result.output || '[Program ran but produced no output]';
+      }
     } else {
-      console.error('Failed to send LLVM IR. Status:', response.status);
-      alert(`Failed to send LLVM IR. Server responded with status: ${response.status}`);
+      console.error('LLVM execution error:', result.error || result.stderr);
+
+      if (outputDisplay) {
+        outputDisplay.textContent = `Error: ${result.error || result.stderr}`;
+      }
     }
   } catch (error) {
     console.error('Error sending LLVM IR:', error);
-    alert('Error sending LLVM IR to server. Check console for details.');
+
+    if (outputDisplay) {
+      outputDisplay.textContent = `Network error: ${error.message}`;
+    }
   }
 }
+

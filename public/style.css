@@ -36,3 +36,12 @@ button {
   margin-right: 10px;
   cursor: pointer;
 }
+
+#outputDisplay {
+  white-space: pre;
+  background: #fff;
+  padding: 10px;
+  border: 1px solid #ddd;
+  font-family: monospace;
+  font-size: 12px;
+}

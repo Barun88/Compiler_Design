@@ -1,5 +1,6 @@
 const express = require('express');
-const fs=require("fs")
+const fs=require("fs");
+const {exec}=require("child_process");
 const path = require('path');
 const app = express();
 const PORT = 3000;
@@ -23,13 +24,33 @@ app.post('/api/ast', (req, res) => {
 
 // API endpoint to receive LLVM IR
 app.post('/api/llvm', (req, res) => {
-  const { llvmIR, ast, timestamp } = req.body;
-  console.log(llvmIR);
-  fs.writeFileSync(`output.ll`, llvmIR);
-  res.json({ 
-    success: true, 
-    message: 'LLVM IR received successfully',
-    irLines: llvmIR.split('\n').length
+  const { llvmIR } = req.body;
+  const llFile = `temp_output_llvm.ll`;
+  const outFile = `temp_output.exe`;
+
+  // Write the LLVM IR to file
+  fs.writeFileSync(llFile, llvmIR);
+
+  // Compile LLVM IR using clang to an executable
+  exec(`clang ${llFile} -o ${outFile}`, (compileErr, stdout, stderr) => {
+    if (compileErr) {
+      console.error('Compilation Error:', stderr);
+      return res.status(500).json({ success: false, error: 'Compilation failed', stderr });
+    }
+
+    // Run the compiled executable
+    exec(`${outFile}`, (runErr, stdout, stderr) => {
+      if (runErr) {
+        console.error('Execution Error:', stderr);
+        return res.status(500).json({ success: false, error: 'Execution failed', stderr });
+      }
+
+      res.json({
+        success: true,
+        message: 'LLVM IR compiled and executed successfully',
+        output: stdout.trim()
+      });
+    });
   });
 });
 
