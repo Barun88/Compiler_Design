@@ -1,4 +1,4 @@
-// Blockly workspace injection
+// Inject Blockly workspace into the webpage
 const workspace = Blockly.inject('blocklyDiv', {
   toolbox: document.getElementById('toolbox'),
   grid: {
@@ -17,24 +17,28 @@ const workspace = Blockly.inject('blocklyDiv', {
   }
 });
 
+// Global variables to store generated JavaScript code and AST
 let generatedcode = '';
 let ast = '';
 
-// Generate JS code from blocks
+// Convert Blockly blocks into JavaScript code
 function generateCode() {
   generatedcode = Blockly.JavaScript.workspaceToCode(workspace);
-  document.getElementById('generatedCode').innerText = generatedcode || '// No blocks';
+  document.getElementById('generatedCode').innerText =
+    generatedcode || '// No blocks';
 }
 
-// Clear workspace and output
+// Clear workspace and reset generated outputs
 function clearWorkspace() {
   workspace.clear();
   generatedcode = '';
   ast = '';
-  document.getElementById('generatedCode').innerText = '// Workspace cleared';
+  document.getElementById('generatedCode').innerText =
+    '// Workspace cleared';
 }
 
-// Strip metadata like start/end from AST
+// Remove unnecessary parser metadata (start/end positions)
+// to make AST cleaner and easier to read/store
 function stripMetadata(node) {
   if (Array.isArray(node)) {
     return node.map(stripMetadata);
@@ -50,10 +54,11 @@ function stripMetadata(node) {
   return node;
 }
 
-// Transform window.alert(...) → console.log(...)
+// Transform window.alert() calls into console.log()
+// This standardizes output handling before further processing
 function transformAlertToConsoleLog(node) {
   if (!node || typeof node !== 'object') return;
-  
+
   if (
     node.type === 'ExpressionStatement' &&
     node.expression?.type === 'CallExpression' &&
@@ -63,16 +68,18 @@ function transformAlertToConsoleLog(node) {
     node.expression.callee.object.name = 'console';
     node.expression.callee.property.name = 'log';
   }
-  
+
+  // Recursively visit child nodes
   for (const key in node) {
     transformAlertToConsoleLog(node[key]);
   }
 }
 
-// Transform console.log(...) → PrintStatement (custom)
+// Convert console.log() nodes into custom PrintStatement nodes
+// This creates a language-independent AST representation
 function transformConsoleLogToPrint(node) {
   if (!node || typeof node !== 'object') return;
-  
+
   if (
     node.type === 'ExpressionStatement' &&
     node.expression?.type === 'CallExpression' &&
@@ -83,13 +90,14 @@ function transformConsoleLogToPrint(node) {
     node.argument = node.expression.arguments[0];
     delete node.expression;
   }
-  
+
+  // Traverse entire AST recursively
   for (const key in node) {
     transformConsoleLogToPrint(node[key]);
   }
 }
 
-// Send AST to server
+// Send generated AST and source code to backend server
 async function sendAstToServer() {
   if (!ast) {
     alert('No AST generated yet. Please generate AST first.');
@@ -97,9 +105,10 @@ async function sendAstToServer() {
   }
 
   try {
-    // Show loading state
     const sendButton = document.getElementById('sendAstButton');
     const originalText = sendButton.textContent;
+
+    // Display loading state
     sendButton.textContent = 'Sending...';
     sendButton.disabled = true;
 
@@ -114,7 +123,7 @@ async function sendAstToServer() {
         timestamp: new Date().toISOString()
       })
     });
-    
+
     if (response.ok) {
       const result = await response.json();
       console.log('AST sent successfully:', result);
@@ -127,14 +136,14 @@ async function sendAstToServer() {
     console.error('Error sending AST:', error);
     alert('Error sending AST to server. Check console for details.');
   } finally {
-    // Reset button state
+    // Restore button state
     const sendButton = document.getElementById('sendAstButton');
     sendButton.textContent = 'Send AST to Server';
     sendButton.disabled = false;
   }
 }
 
-// Parse generated code to AST and apply filters
+// Parse generated JavaScript into AST using Acorn parser
 function getAst() {
   if (!generatedcode) {
     alert('No code generated yet. Please add blocks and generate code first.');
@@ -142,55 +151,70 @@ function getAst() {
   }
 
   try {
+    // Generate AST from JavaScript code
     const parsedAst = acorn.parse(generatedcode, {
       ecmaVersion: 'latest',
       locations: false
     });
-    
-    // Apply transformations
+
+    // Apply custom AST transformations
     transformAlertToConsoleLog(parsedAst);
     transformConsoleLogToPrint(parsedAst);
+
+    // Remove unnecessary metadata
     const filteredAst = stripMetadata(parsedAst);
-    
-    // Store the filtered AST globally
+
+    // Store final AST globally
     ast = filteredAst;
-    
+
     console.log("Transformed AST:", filteredAst);
-    document.getElementById('generatedCode').innerText = JSON.stringify(filteredAst, null, 2);
-    
-    // Enable the send button now that we have an AST
+
+    // Display AST in formatted JSON structure
+    document.getElementById('generatedCode').innerText =
+      JSON.stringify(filteredAst, null, 2);
+
+    // Enable server upload button
     const sendButton = document.getElementById('sendAstButton');
     if (sendButton) {
       sendButton.disabled = false;
     }
-    
+
   } catch (error) {
     console.error("Failed to parse:", error);
-    document.getElementById('generatedCode').innerText = `// Failed to generate AST: ${error.message}`;
-    ast = ''; // Clear AST on error
+    document.getElementById('generatedCode').innerText =
+      `// Failed to generate AST: ${error.message}`;
+
+    ast = '';
   }
 }
 
-// For console output
+// Print current AST in browser console
 function logCode() {
   if (ast) {
-    console.log("Current Generated AST:\n", JSON.stringify(ast, null, 2));
+    console.log(
+      "Current Generated AST:\n",
+      JSON.stringify(ast, null, 2)
+    );
   } else {
     console.log("No AST available. Generate AST first.");
   }
 }
 
-// Auto-send AST to server (optional - uncomment if you want automatic sending)
+// Utility function:
+// Generate AST and automatically send it to backend
 function getAstAndSend() {
   getAst();
+
   if (ast) {
-    setTimeout(() => sendAstToServer(), 100); // Small delay to ensure AST is processed
+    setTimeout(() => sendAstToServer(), 100);
   }
 }
 
-// Initialize - disable send button until AST is generated
+// Initialize page
+// Send button remains disabled until AST is generated
 document.addEventListener('DOMContentLoaded', function() {
   const sendButton = document.getElementById('sendAstButton');
+
   if (sendButton) {
     sendButton.disabled = true;
   }
